@@ -7,7 +7,7 @@
 import sys,os,json,glob,html,datetime,subprocess
 sys.path.insert(0,'/workspace')
 HIST='/workspace/history'; SITE=os.path.dirname(os.path.abspath(__file__))
-COUNTRIES=['Spanien','Grekland','Cypern','Malta']
+COUNTRIES=['Grekland','Malta','Cypern','Madeira']
 M=['jan','feb','mar','apr','maj','jun','jul','aug','sep','okt','nov','dec']
 def fd(s): x=datetime.date.fromisoformat(s); return f"{x.day} {M[x.month-1]} {x.year}"
 def kr(n): return f"{int(n):,}".replace(',',' ')+' kr'
@@ -18,7 +18,7 @@ def snapshot(day):
     rows=bm.load(); top=bm.uniq(rows,5)
     pc=[x[0] for x in (bm.uniq([r for r in rows if r['country']==c],1) for c in COUNTRIES) if x]
     d=dict(week=day,generated=datetime.datetime.now().isoformat(timespec='minutes'),
-           sites=[s for s in ['Apollo','Ving','TUI'] if any(r['site']==s for r in rows)],top=top,per_country=pc)
+           sites=[s for s in ['Apollo','Ving','TUI'] if any(r['site']==s for r in rows)],rooms='2+1',top=top,per_country=pc)
     json.dump(d,open(f'{HIST}/week_{day}.json','w'),ensure_ascii=False,indent=1)
 
 def weeks():
@@ -74,9 +74,9 @@ def page(w,all_w,pre,is_index):
     src=', '.join(w.get('sites') or sorted({r['site'] for r in w['top']}))
     return f'''<!doctype html><html lang="sv"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Sommarresor 2027 – vecka {fd(w["week"])}</title><style>{CSS%pre}</style></head><body>
-<header><h1>☀️ Veckans prisvärda resor</h1><p>Grekland · Spanien · Malta · Cypern — avresa 21 juni–31 juli 2027 · 6–9 dagar · 3 vuxna · från Arlanda</p>
+<header><h1>☀️ Veckans prisvärda resor</h1><p>Grekland · Malta · Cypern · Madeira — avresa 21 juni–31 juli 2027 · 6–9 dagar · 3 vuxna · från Arlanda</p>
 <div class="sun">{"Senaste veckan" if is_index else "Arkiv"}: {fd(w["week"])}</div></header><main>
-<div class="card"><h2>Topp 5 efter totalpris</h2><p class="muted">Billigaste datumet per hotell · källor: {E(src)}{gen}. Priserna är dynamiska och kan ha ändrats.</p>{table(w["top"])}</div>
+<div class="card"><h2>Topp 5 efter totalpris</h2><p class="muted"><b>{"3 vuxna i två rum (2+1) – priset gäller båda rummen tillsammans" if w.get("rooms") else "3 vuxna i ett rum (Spanien ingick då)"}</b> · Billigaste datumet per hotell · källor: {E(src)}{gen}. Priserna är dynamiska och kan ha ändrats.</p>{table(w["top"])}</div>
 <div class="card c2"><h2>Billigast per land</h2>{table(w.get("per_country"))}</div>
 <div class="card c4" id="favoriter"><h2>❤️ Favoriter</h2><p class="muted">Hjärtade resor från alla veckor. Sparas bara i den här webbläsaren/enheten.</p><div id="favlist"></div></div>
 <div class="card c3 arch"><h2>Veckoarkiv</h2>{arch}</div></main>
